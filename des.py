@@ -9,7 +9,9 @@ import unittest
 # unzip
 # vim 
 # gnu global 
-# sudo apt-get install build-essential cmake python-dev libncurses5-dev unzip git wget exuberant-ctags vim 
+#  
+g_strPrerequisites = """sudo apt-get install -y build-essential cmake python-dev libncurses5-dev unzip git wget exuberant-ctags vim
+"""
 
 g_strHOME= os.environ['HOME']
 g_strMYBIN = g_strHOME+'/my_bin'
@@ -677,7 +679,9 @@ def main():
     nPhase =0
     print ("Development Environment setting is now start")
     print ("2015.08.04 by windheim")
-
+    print ("Before install, check the prerequisite packages")
+    print ("Prerequisites ; ")
+    print (g_strPrerequisites)
 
     # base directory (my_bin, .vim) 만들기 
     nPhase+=1
