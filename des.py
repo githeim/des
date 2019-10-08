@@ -10,7 +10,7 @@ import unittest
 # vim 
 # gnu global 
 #  
-g_strPrerequisites = """sudo apt-get install -y build-essential cmake python-dev libncurses5-dev unzip git wget exuberant-ctags vim
+g_strPrerequisites = """sudo apt-get install build-essential cmake python-dev libncurses5-dev unzip git wget exuberant-ctags clang-8 libclang-8-dev llvm-8-dev rapidjson-dev nodejs yarn \ncurl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 """
 
 g_strHOME= os.environ['HOME']
@@ -31,8 +31,128 @@ export GTAGSROOT=$MWPATH
 export GTAGSDBPATH=$MWPATH
 #tmux 설정
 alias tmux="TERM=screen-256color-bce tmux -2"    
+# for git support
+alias mc=". /usr/share/mc/bin/mc-wrapper.sh"                                     
+git config --global user.email "nowhere@nowhere.com"                               
+git config --global user.name "nowhere"                                        
+git config --global push.default matching                                        
+git config --global diff.tool vimdiff
+git config --global  merge.tool vimdiff
+git config --global  merge.conflictstyle diff3
+export GIT_EDITOR=vim                                                            
+export EDITOR=vim            
+
+# :x: for remote connection
+export DISPLAY=:1
+
+# for docker
+alias docker='sudo docker'           
+
+
             """
 g_strBashrc_writemode ='a' # :x: add the script in the end of .bashrc file
+
+g_strCocSettings_filename=g_strHOME+'/.vim/coc-settings.json'
+g_strCocSettings_script = """
+{
+  "languageserver": {
+    "ccls": {
+      "command": "ccls",
+      "filetypes": ["c", "cpp", "objc", "objcpp"],
+      "rootPatterns": [".ccls", "compile_commands.json", ".vim/", ".git/", ".hg/"],
+      "initializationOptions": {
+        "cache": {
+          "directory": "/tmp/ccls"
+        }
+      }
+    },
+    "python": {
+      "command": "python",
+      "args": [
+        "-mpyls",
+        "-vv",
+        "--log-file",
+        "/tmp/lsp_python.log"
+      ],
+      "trace.server": "verbose",
+      "filetypes": [
+        "python"
+      ],
+      "settings": {
+        "pyls": {
+          "enable": true,
+          "trace": {
+            "server": "verbose"
+          },
+          "commandPath": "",
+          "configurationSources": [
+            "pycodestyle"
+          ],
+          "plugins": {
+            "jedi_completion": {
+              "enabled": true
+            },
+            "jedi_hover": {
+              "enabled": true
+            },
+            "jedi_references": {
+              "enabled": true
+            },
+            "jedi_signature_help": {
+              "enabled": true
+            },
+            "jedi_symbols": {
+              "enabled": true,
+              "all_scopes": true
+            },
+            "mccabe": {
+              "enabled": true,
+              "threshold": 15
+            },
+            "preload": {
+              "enabled": true
+            },
+            "pycodestyle": {
+              "enabled": true
+            },
+            "pydocstyle": {
+              "enabled": false,
+              "match": "(?!test_).*\\\\.py",
+              "matchDir": "[^\\\\.].*"
+            },
+            "pyflakes": {
+              "enabled": true
+            },
+            "rope_completion": {
+              "enabled": true
+            },
+            "yapf": {
+              "enabled": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
+            """
+g_strCocSettings_writemode ='w' # :x: write new script 
+
+g_strCCLS_Setting_filename=g_strHOME+'/.ccls'
+g_strCCLS_Setting_script = """
+%c -std=c11
+%cpp -std=gnu++14
+%h -x
+%h c++-header
+
+# for QT support
+-I/usr/include/x86_64-linux-gnu/qt5
+-I/usr/include/x86_64-linux-gnu/qt5/QtCore
+-I/usr/include/x86_64-linux-gnu/qt5/QtWidgets
+            """
+g_strCCLS_Setting_writemode ='w' # :x: add the script in the end of .bashrc file
+
+
 
 
 g_strMW_filename=g_strMYBIN+'/mw'
@@ -250,17 +370,14 @@ g_strTMUX_conf_script = """
 setw -g mode-keys vi
  
  
-# use UTF8
-set -g utf8
-set-window-option -g utf8 on
- 
-# set scrollback history to 10000 (10k)
-set -g history-limit 10000
+# set scrollback history to 100000 (100k)
+set -g history-limit 100000
 bind  k resize-pane -R
 bind  j resize-pane -L
- 
-#bind a splitw -v -p 20 -t0
-bind a splitw -h -p 33 -t0
+
+bind '"' split-window -c "#{pane_current_path}"
+bind % split-window -h -c "#{pane_current_path}"
+bind c new-window -c "#{pane_current_path}"
 """
 g_strTMUX_conf_writemode='w'
 
@@ -279,7 +396,7 @@ set tags+=~/my_bin/local_main_tags
 "tab 설정
 set tabstop=2
 set et
-set ts=4 sw=4 sts=4
+set ts=2 sw=2 sts=2
 set background=dark
 "마우스
 "set mouse=a
@@ -400,7 +517,7 @@ Plugin 'DoxygenToolkit.vim'
 Plugin 'The-NERD-tree'
 Plugin 'Tagbar'
 Plugin 'bufexplorer.zip'
-Plugin 'Valloric/YouCompleteMe'
+" Plugin 'Valloric/YouCompleteMe'
 " Airline 설치
 Plugin 'vim-airline/vim-airline'
 " Audo Tag 설치 ; ctag/cscope 갱신기능
@@ -426,11 +543,149 @@ Plugin 'airblade/vim-gitgutter'
 " vundle 설정  end===============================
 
 " YCM 설정 ===========================
-let g:ycm_global_ycm_extra_conf = "~/.vim/.ycm_extra_conf.py"
-let g:ycm_key_list_select_completion=[]  
-let g:ycm_key_list_previous_completion=[]
-let g:ycm_autoclose_preview_window_after_completion=1
+"let g:ycm_global_ycm_extra_conf = "~/.vim/.ycm_extra_conf.py"
+"let g:ycm_key_list_select_completion=[]  
+"let g:ycm_key_list_previous_completion=[]
+"let g:ycm_autoclose_preview_window_after_completion=1
 "let g:ycm_show_diagnostics_ui = 0
+
+
+" vimplug 설정     ===============================                               
+call plug#begin('~/.vim/plugged')                                                
+Plug 'neoclide/coc.nvim', {'branch': 'release'}                                  
+call plug#end()                                                                  
+" vimplug 설정  end===============================    
+
+" coc 설정 ===========================
+" if hidden is not set, TextEdit might fail.
+set hidden
+
+" Some servers have issues with backup files, see #649
+set nobackup
+set nowritebackup
+
+" Better display for messages
+set cmdheight=2
+
+" You will have bad experience for diagnostic messages when it's default 4000.
+set updatetime=300
+
+" don't give |ins-completion-menu| messages.
+set shortmess+=c
+
+" always show signcolumns
+set signcolumn=yes
+
+" Use tab for trigger completion with characters ahead and navigate.
+" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-space> to trigger completion.
+inoremap <silent><expr> <c-space> coc#refresh()
+
+" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
+" Coc only does snippet and additional edit on confirm.
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+" Or use `complete_info` if your vim support it, like:
+" inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
+
+" Use `[g` and `]g` to navigate diagnostics
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" Remap keys for gotos
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Use K to show documentation in preview window
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
+" Highlight symbol under cursor on CursorHold
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Remap for rename current word
+nmap <leader>rn <Plug>(coc-rename)
+
+" Remap for format selected region
+xmap <leader>f  <Plug>(coc-format-selected)
+nmap <leader>f  <Plug>(coc-format-selected)
+
+augroup mygroup
+  autocmd!
+  " Setup formatexpr specified filetype(s).
+  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  " Update signature help on jump placeholder
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+augroup end
+
+" Remap for do codeAction of selected region, ex: `<leader>aap` for current paragraph
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+" Remap for do codeAction of current line
+nmap <leader>ac  <Plug>(coc-codeaction)
+" Fix autofix problem of current line
+nmap <leader>qf  <Plug>(coc-fix-current)
+
+" Create mappings for function text object, requires document symbols feature of languageserver.
+xmap if <Plug>(coc-funcobj-i)
+xmap af <Plug>(coc-funcobj-a)
+omap if <Plug>(coc-funcobj-i)
+omap af <Plug>(coc-funcobj-a)
+
+" Use <C-d> for select selections ranges, needs server support, like: coc-tsserver, coc-python
+"nmap <silent> <C-d> <Plug>(coc-range-select)
+"xmap <silent> <C-d> <Plug>(coc-range-select)
+
+" Use `:Format` to format current buffer
+command! -nargs=0 Format :call CocAction('format')
+
+" Use `:Fold` to fold current buffer
+command! -nargs=? Fold :call     CocAction('fold', <f-args>)
+
+" use `:OR` for organize import of current buffer
+command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
+
+" Add status line support, for integration with other plugin, checkout `:h coc-status`
+set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+
+" Using CocList
+" Show all diagnostics
+nnoremap <silent> <space>a  :<C-u>CocList diagnostics<cr>
+" Manage extensions
+nnoremap <silent> <space>e  :<C-u>CocList extensions<cr>
+" Show commands
+nnoremap <silent> <space>c  :<C-u>CocList commands<cr>
+" Find symbol of current document
+nnoremap <silent> <space>o  :<C-u>CocList outline<cr>
+" Search workspace symbols
+nnoremap <silent> <space>s  :<C-u>CocList -I symbols<cr>
+" Do default action for next item.
+nnoremap <silent> <space>j  :<C-u>CocNext<CR>
+" Do default action for previous item.
+nnoremap <silent> <space>k  :<C-u>CocPrev<CR>
+" Resume latest coc list
+nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
+
 " ====================================
 
 "highlight 색깔 변경
@@ -443,6 +698,10 @@ hi Character    term=bold ctermfg=Brown guifg=Brown gui=bold
 hi Boolean      term=bold ctermfg=Brown guifg=Brown gui=bold
 hi Constant      term=bold ctermfg=Red guifg=Brown gui=bold
 highlight Pmenu ctermfg=14 ctermbg=0 guifg=#00ff00 guibg=#0000ff
+
+" color column
+set colorcolumn=81
+highlight ColorColumn ctermbg=magenta
 """
 g_strVIMRC_writemode ='w'
 
@@ -470,23 +729,44 @@ def download_file(url,filename,target_dir):
 
     
 def install_vundle(str_target_path):
-    # :x: check the installation of the git
-    cmd = """git --version """
-    output=subprocess.call (cmd, shell=True)    
-    if output!=0:
-        print("No git in this system, install the git")
-        print("ex)  $ sudo apt-get install git")
-        return False
-    
-    # :x: try the vundle installation
-    #cmd = """git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim"""
-    cmd = """git clone https://github.com/gmarik/Vundle.vim.git """+ str_target_path
+  # :x: check the installation of the git
+  cmd = """git --version """
+  output=subprocess.call (cmd, shell=True)    
+  if output!=0:
+    print("No git in this system, install the git")
+    print("ex)  $ sudo apt-get install git")
+    return False
+  
+  # :x: try the vundle installation
+   
+  if (os.path.isdir(g_strMYBIN+"/vundle") == False) :
+    cmd = """git clone https://github.com/gmarik/Vundle.vim.git """+ g_strMYBIN+"/vundle"
+    print (cmd)
     output=subprocess.call (cmd, shell=True)    
     if output!=0:
         print("Error on downloading file")
         return False
-    print("OK")
-    return True
+  else :
+    print ("Vundle is already downloaded")
+
+  cmd = """cp -rf """+ g_strMYBIN+"/vundle/* "+str_target_path
+  print (cmd)
+  output=subprocess.call (cmd, shell=True)    
+  if output!=0:
+    print("Error on copy files")
+    return False
+
+  cmd = """rm -rf """+ g_strMYBIN+"/vundle "
+  print (cmd)
+  output=subprocess.call (cmd, shell=True)    
+  if output!=0:
+    print("Error on copy files")
+    return False
+
+
+
+  print("OK")
+  return True
 
 def install_plugins_vundle():
     cmd = """vim +BundleInstall +qall """
@@ -496,6 +776,54 @@ def install_plugins_vundle():
         return False
     print("OK")
     return True
+
+def install_vimplug():
+    # :x: try the vimplug installation
+    cmd = """curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim """
+    output=subprocess.call (cmd, shell=True)    
+    if output!=0:
+        print("Error on downloading file")
+        return False
+    print("OK")
+    return True
+
+def install_plugins_vimplug():
+    cmd = """vim +PlugInstall +qall """
+    output=subprocess.call (cmd, shell=True)    
+    if output!=0:
+        print("Error on installing")
+        return False
+    print("OK")
+    return True
+
+def install_ccls():
+    cmd = 'mkdir ~/my_bin/ccls_install' 
+    output=subprocess.call (cmd, shell=True)    
+    if output!=0:
+        print("Error on create directory")
+        return False
+
+    cmd = 'git clone --depth=1 --recursive https://github.com/MaskRay/ccls ~/my_bin/ccls_install' 
+    output=subprocess.call (cmd, shell=True)    
+    if output!=0:
+        print("Error on cloning")
+        return False
+
+    cmd = 'cd ~/my_bin/ccls_install ; cmake -H. -BRelease -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/lib/llvm-8 && cmake --build Release' 
+    output=subprocess.call (cmd, shell=True)    
+    if output!=0:
+        print("Error on configuration & build")
+        return False
+
+    cmd = 'ln -s ~/my_bin/ccls_install/Release/ccls ~/my_bin/ccls' 
+    output=subprocess.call (cmd, shell=True)    
+    if output!=0:
+        print("Error on making symbolic link")
+        return False
+
+    print("OK")
+    return True
+
 
 def install_ycm():
     cmd = """cd ~/.vim/bundle/YouCompleteMe ; ./install.py --clang-completer    """
@@ -604,7 +932,7 @@ def add_script(contents):
     return True
 
 def add_scripts():
-    print('make additional script on .bashrc')
+    print('make additional scripts like .bashrc')
 
     scripts =[ #filename, script to write, write mode 'w'(write) 'a'(add)
                [g_strBASHRC_filename,g_strBashrc_script,g_strBashrc_writemode],
@@ -614,14 +942,15 @@ def add_scripts():
                [g_strMdb_main_ctags_filename,g_strMdb_main_ctags_script,g_strMdb_main_ctags_writemode],
                [g_strVIMRC_filename,g_strVIMRC_script,g_strVIMRC_writemode],
                [g_strTMUX_conf_filename,g_strTMUX_conf_script,g_strTMUX_conf_writemode],
-               [g_strYCM_conf_filename,g_strYCM_conf_script,g_strYCM_conf_writemode],
+               [g_strCocSettings_filename,g_strCocSettings_script,g_strCocSettings_writemode],
+               [g_strCCLS_Setting_filename,g_strCCLS_Setting_script,g_strCCLS_Setting_writemode],
             ]
     for item in scripts:
         if add_script(item) != True:
             return False
     return True
 
-g_STR_global_version_name ='global-6.6.1'
+g_STR_global_version_name ='global-6.6.3'
 g_STR_global_compressed_name=g_STR_global_version_name+".tar.gz" 
 g_STR_global_URL= 'https://ftp.gnu.org/pub/gnu/global/'+g_STR_global_version_name+'.tar.gz'
 
@@ -678,7 +1007,7 @@ def install_gnu_global():
 def main():
     nPhase =0
     print ("Development Environment setting is now start")
-    print ("2015.08.04 by windheim")
+    print ("2019.10.08 by windheim")
     print ("Before install, check the prerequisite packages")
     print ("Prerequisites ; ")
     print (g_strPrerequisites)
@@ -715,29 +1044,53 @@ def main():
     if add_scripts() == False :
         print("Error on Phase #",nPhase)
         return False
+
+    # vim-plug의 설치
+    nPhase+=1
+    print ("Phase #",nPhase," ; install vim-plug")
+    if install_vimplug() == False :
+        print("Error on Phase #",nPhase)
+        return False
+
     # vundle 내 plugin 설치
     nPhase+=1
     print ("Phase #",nPhase," ; install plugins in vundle")
-    install_plugins_vundle()
     if install_plugins_vundle() == False :
         print("Error on Phase #",nPhase)
         return False
 
-    # ycm 설치
+    # vim-plug 내 plugin 설치
     nPhase+=1
-    print ("Phase #",nPhase," ; install YCM(YouCompleteMe) plugin in vundle")
-    install_ycm()
-    if install_ycm() == False :
+    print ("Phase #",nPhase," ; install plugins in vim-plug")
+    if install_plugins_vimplug() == False :
         print("Error on Phase #",nPhase)
         return False
-
+    ## ycm 설치
+    #nPhase+=1
+    #print ("Phase #",nPhase," ; install YCM(YouCompleteMe) plugin in vundle")
+    #install_ycm()
+    #if install_ycm() == False :
+    #    print("Error on Phase #",nPhase)
+    #    return False
+   
     # gnu global 생성
     nPhase+=1
     print ("Phase #",nPhase," ; install GNU global manually")
     if install_gnu_global() == False :
         print("Error on Phase #",nPhase)
         return False
+
+
+
+    # install ccls (c/c++ parser)
+    nPhase+=1
+    print ("Phase #",nPhase," ; install ccls the c/c++ parser")
+    if install_ccls() == False :
+        print("Error on Phase #",nPhase)
+        return False
+   
     return True
+
     
 # ========unit test====================================
 def remove_file_if_exist(strPath):
