@@ -553,8 +553,15 @@ Plugin 'airblade/vim-gitgutter'
 " vimplug 설정     ===============================                               
 call plug#begin('~/.vim/plugged')                                                
 Plug 'neoclide/coc.nvim', {'branch': 'release'}                                  
+Plug 'OmniSharp/omnisharp-vim'
 call plug#end()                                                                  
 " vimplug 설정  end===============================    
+
+" omnisharp 설정 =====
+let g:OmniSharp_server_stdio = 1
+let g:OmniSharp_server_use_mono = 1
+let g:OmniSharp_highlight_types = 2
+" ====================
 
 " coc 설정 ===========================
 " if hidden is not set, TextEdit might fail.
