@@ -420,7 +420,7 @@ let NERDTreeWinPos ="right"
 "let NERDTreeWinPos ="left"
  
 "주요단축키
-nmap [1 <Insert><Insert>printf("\\033[1;32m[%s][%d] :x: chk \\033[m\\n",__FUNCTION__,__LINE__);<CR><C-C>
+nmap [1 <Insert><Insert>Debug.Log(":x: chk ");<CR><C-C>
 nmap [2 <Insert><Insert>printf("\\033[1;33m[%s][%d] :x: chk \\033[m\\n",__FUNCTION__,__LINE__);<CR><C-C>
 nmap [3 <Insert><Insert>printf("\\033[1;36m[%s][%d] :x: chk \\033[m\\n",__FUNCTION__,__LINE__);<CR><C-C>
 nmap [4 a/* :x: projectname_myname<C-R>=strftime("%Y%m%d")<CR>_*/<C-C>
@@ -552,6 +552,7 @@ Plugin 'airblade/vim-gitgutter'
 
 " vimplug 설정     ===============================                               
 call plug#begin('~/.vim/plugged')                                                
+Plug 'terryma/vim-multiple-cursors'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}                                  
 Plug 'OmniSharp/omnisharp-vim'
 call plug#end()                                                                  
@@ -709,6 +710,7 @@ highlight Pmenu ctermfg=14 ctermbg=0 guifg=#00ff00 guibg=#0000ff
 " color column
 set colorcolumn=81
 highlight ColorColumn ctermbg=magenta
+autocmd FileType python set shiftwidth=2 tabstop=2 expandtab
 """
 g_strVIMRC_writemode ='w'
 
